@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -24,18 +25,27 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 
+	lines := make([]int, 0)
+	sums := make([]int, 0)
+
 	i := 0
-	j := 0
 	count := 0
 
 	for scanner.Scan() {
 		i, _ = strconv.Atoi(scanner.Text())
-		if i > j && j != 0 {
-			count++
-		}
-		j = i
+		lines = append(lines, i)
 	}
 
-	println("Count: ", count)
+	for j := 0; j < len(lines)-2; j++ {
+		sums = append(sums, lines[j]+lines[j+1]+lines[j+2])
+	}
+
+	for j := 1; j < len(sums); j++ {
+		if sums[j] > sums[j-1] {
+			count++
+		}
+	}
+
+	fmt.Println("Count: ", count)
 
 }
