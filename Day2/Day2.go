@@ -28,6 +28,7 @@ func main() {
 
 	x := 0
 	y := 0
+	z := 0
 
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -35,11 +36,12 @@ func main() {
 		i, _ := strconv.Atoi(fields[1])
 		switch fields[0] {
 		case "up":
-			x -= i
+			z -= i
 		case "down":
-			x += i
+			z += i
 		case "forward":
 			y += i
+			x += i * z
 		default:
 			log.Fatal("unknown direction")
 		}
