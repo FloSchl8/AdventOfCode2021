@@ -49,27 +49,33 @@ func main() {
 	boards = append(boards, convertBoardStringToInt(collected))
 
 	winner := false
-	winnerBoard := 0
-	winningDraw := make([]int, 0)
+	winningBoards := make([]int, 0)
 
 	for i := 4; i < len(drawnNumbers); i++ {
 		currentDraw := drawnNumbers[:i+1]
 		for j, board := range boards {
 			winner = checkBoard(board, currentDraw)
-			if winner {
-				winnerBoard = j
-				winningDraw = currentDraw
+
+			if winner && !wasAlreadyWinner(j, winningBoards) {
+				winningBoards = append(winningBoards, j)
 				fmt.Println("Winner board number", j)
 				fmt.Println("drawn numbers", currentDraw)
-				break
+				fmt.Println("Winning sum", getWinningBoardSum(boards[j], currentDraw))
 			}
-		}
-		if winner {
-			break
 		}
 	}
 
-	fmt.Println("Winning sum", getWinningBoardSum(boards[winnerBoard], winningDraw))
+	fmt.Println(winningBoards)
+	//fmt.Println("Winning sum", getWinningBoardSum(boards[winnerBoard], winningDraw))
+}
+
+func wasAlreadyWinner(boardnumber int, boards []int) bool {
+	for i := 0; i < len(boards); i++ {
+		if boards[i] == boardnumber {
+			return true
+		}
+	}
+	return false
 }
 
 func getWinningBoardSum(board [][]int, draw []int) int {
@@ -87,6 +93,7 @@ func getWinningBoardSum(board [][]int, draw []int) int {
 			}
 		}
 	}
+	fmt.Println(result, draw[len(draw)-1])
 
 	return result * draw[len(draw)-1]
 }
@@ -100,13 +107,13 @@ func checkBoard(board [][]int, drawnNumbers []int) bool {
 			column = append(column, row[i])
 
 			if checkBingo(row, drawnNumbers) {
-				fmt.Println("WINNER!! Board", board)
+				//fmt.Println("WINNER!! Board", board)
 				return true
 			}
 		}
 
 		if checkBingo(column, drawnNumbers) {
-			fmt.Println("WINNER!! Board", board)
+			//fmt.Println("WINNER!! Board", board)
 			return true
 		}
 	}
@@ -128,7 +135,7 @@ func checkBingo(boardNumbers []int, drawnNumbers []int) bool {
 		}
 
 		if hits == neededHits {
-			fmt.Println("WINNER ROW", boardNumbers)
+			//fmt.Println("WINNER ROW", boardNumbers)
 			winner = true
 			break
 		}
