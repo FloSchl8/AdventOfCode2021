@@ -29,32 +29,42 @@ func main() {
 
 	input := strings.Split(scanner.Text(), ",")
 
-	fishs := make([]fish, 0)
+	fishMap := make(map[int]uint64)
 
 	for _, s := range input {
 		timer, _ := strconv.Atoi(s)
-		f := fish{timer: timer}
-		fishs = append(fishs, f)
+		fishMap[timer]++
 	}
 
-	fmt.Println(fishs)
+	fmt.Println(fishMap)
 
-	for i := 0; i < 80; i++ {
-		for i, f := range fishs {
-			switch f.timer {
-			case 0:
-				fishs[i] = fish{timer: 6}
-				fishs = append(fishs, fish{timer: 8})
-			default:
-				fishs[i] = fish{timer: f.timer - 1}
+	for i := 0; i < 256; i++ {
+		tmp := make(map[int]uint64)
+
+		for j := 0; j < 9; j++ {
+			if j == 0 {
+				tmp[8] += fishMap[0]
+				tmp[6] += fishMap[0]
+				fishMap[0] = 0
+			} else {
+				tmp[j-1] += fishMap[j]
+				fishMap[j] -= fishMap[j]
 			}
+		}
+
+		for timer, count := range tmp {
+			fishMap[timer] += count
 		}
 	}
 
-	fmt.Println(len(fishs))
+	fmt.Println(fishMap)
 
-}
+	var sum uint64
 
-type fish struct {
-	timer int
+	for _, count := range fishMap {
+		sum += count
+	}
+
+	fmt.Println(sum)
+
 }
