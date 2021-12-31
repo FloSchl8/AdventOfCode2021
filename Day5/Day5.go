@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -26,8 +27,6 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	lines := make([]Line, 0)
 
-	max := 0
-
 	for scanner.Scan() {
 		coords := strings.Split(scanner.Text(), " -> ")
 		start := convertToPoint(strings.Split(coords[0], ","))
@@ -36,78 +35,80 @@ func main() {
 			Start: start,
 			End:   end,
 		})
-		if start.getMaxValue() > max {
-			max = start.getMaxValue()
-		}
-		if end.getMaxValue() > max {
-			max = end.getMaxValue()
-		}
 	}
 
-	lines = filterLines(lines)
-
-	grid := plotGrid(lines, max+1)
-
-	fmt.Println(getNumberOfIntersections(grid))
-}
-
-func getNumberOfIntersections(grid [][]int) int {
+	grid := plotGrid(lines)
 	count := 0
 
-	for _, ints := range grid {
-		for _, i := range ints {
-			if i > 1 {
-				count++
-			}
+	for _, i := range grid {
+		if i > 1 {
+			count++
 		}
 	}
 
-	return count
+	fmt.Println(count)
+
 }
 
-func plotGrid(lines []Line, gridSize int) [][]int {
+func plotGrid(lines []Line) map[Point]int {
 
-	grid := make([][]int, gridSize)
-
-	for i, ints := range grid {
-		if ints == nil {
-			ints = make([]int, gridSize)
-			grid[i] = ints
-		}
-	}
+	dotGrid := make(map[Point]int)
 
 	for _, line := range lines {
-		if line.Start.X == line.End.X {
-			for i := line.Start.Y; i <= line.End.Y; i++ {
-				grid[line.Start.X][i]++
+		start := line.Start
+		end := line.End
+		v, h := line.getLengths()
+		vertical := int(math.Abs(float64(v)))
+		horizontal := int(math.Abs(float64(h)))
+
+		verticalSign := 1
+		horizontalSign := 1
+
+		if math.Signbit(float64(v)) {
+			verticalSign = -1
+		}
+		if math.Signbit(float64(h)) {
+			horizontalSign = -1
+		}
+
+		// dots
+		if start.equal(end) {
+			dotGrid[start]++
+		}
+		// diagonal
+		if vertical == horizontal {
+			for i := 0; i <= vertical; i++ {
+				point := Point{
+					X: start.X + (i * verticalSign),
+					Y: start.Y + (i * horizontalSign),
+				}
+				dotGrid[point]++
+			}
+		}
+		// vertical lines
+		if horizontal == 0 {
+			for i := 0; i <= vertical; i++ {
+				point := Point{
+					X: start.X + (i * verticalSign),
+					Y: start.Y,
+				}
+				dotGrid[point]++
+			}
+		}
+		// horizontal lines
+		if vertical == 0 {
+			for i := 0; i <= horizontal; i++ {
+				point := Point{
+					X: start.X,
+					Y: start.Y + (i * horizontalSign),
+				}
+				dotGrid[point]++
 			}
 		}
 
-		if line.Start.Y == line.End.Y {
-			for i := line.Start.X; i <= line.End.X; i++ {
-				grid[i][line.Start.Y]++
-			}
-		}
 	}
 
-	return grid
-}
-
-func filterLines(lines []Line) []Line {
-
-	newLines := make([]Line, 0)
-
-	for _, line := range lines {
-		if line.Start.hasEqualXorY(line.End) {
-			newLine := Line{
-				Start: line.Start,
-				End:   line.End,
-			}
-			newLine = newLine.switchStartAndEnd()
-			newLines = append(newLines, newLine)
-		}
-	}
-	return newLines
+	return dotGrid
 }
 
 func convertToPoint(coords []string) Point {
@@ -120,20 +121,11 @@ func convertToPoint(coords []string) Point {
 	}
 }
 
-func (p Point) hasEqualXorY(point Point) bool {
-	if p.X == point.X || p.Y == point.Y {
+func (p Point) equal(p2 Point) bool {
+	if p.X == p2.X && p.Y == p2.Y {
 		return true
 	}
 	return false
-}
-
-func (p Point) getMaxValue() int {
-
-	if p.X > p.Y {
-		return p.X
-	} else {
-		return p.Y
-	}
 }
 
 type Point struct {
@@ -141,11 +133,14 @@ type Point struct {
 	Y int
 }
 
-func (l Line) switchStartAndEnd() Line {
-	if l.Start.X > l.End.X || l.Start.Y > l.End.Y {
-		l.Start, l.End = l.End, l.Start
-	}
-	return l
+func (l Line) getLengths() (int, int) {
+	start := l.Start
+	end := l.End
+
+	vertical := end.X - start.X
+	horizontal := end.Y - start.Y
+
+	return vertical, horizontal
 }
 
 type Line struct {
