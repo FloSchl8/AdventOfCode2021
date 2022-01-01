@@ -36,17 +36,28 @@ func main() {
 		numbers[number]++
 	}
 
-	optimalAlgin := m.calcMedian()
-	fmt.Println("optimal align:", optimalAlgin)
+	optimalAlign := 0
+	fuelCostTotal := math.MaxInt
 
-	fuelCostTotal := 0
+	for align := 0; align < 1000; align++ {
 
-	for number, count := range numbers {
-		fuelCost := math.Abs(float64(optimalAlgin - number))
-		fuelCostTotal += count * int(fuelCost)
+		fmt.Println("current align:", align)
+		fuelCostTmp := 0
+		for number, count := range numbers {
+			diff := math.Abs(float64(align - number))
+			fuelCost := (diff / 2) * (diff + 1)
+			fuelCostTmp += count * int(fuelCost)
+		}
+		fmt.Println("fuel cost", fuelCostTmp, "at", align)
+		if fuelCostTmp < fuelCostTotal {
+			optimalAlign = align
+			fuelCostTotal = fuelCostTmp
+		}
+
 	}
 
-	fmt.Println("total fuel:", fuelCostTotal)
+	fmt.Println("total fuel:", fuelCostTotal, "at", optimalAlign)
+
 }
 
 func (m median) calcMedian() int {
